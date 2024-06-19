@@ -202,7 +202,10 @@ const timeZones = {
 const fetchTime = (timeZone) => {
     return fetch(`https://worldtimeapi.org/api/timezone/${timeZone}`)
         .then(response => response.json())
-        .then(data => data.datetime)
+        .then(data => {
+            const [date, time] = data.datetime.split('T');
+            return { date, time: time.split('.')[0] }; // removing milliseconds
+        })
         .catch(error => console.error('Error fetching time:', error));
 };
 
@@ -211,10 +214,10 @@ const displayTimeZones = async (filter = '') => {
     const filteredTimeZones = Object.entries(timeZones)
         .filter(([country]) => country.toLowerCase().includes(filter.toLowerCase()));
     for (const [country, timeZone] of filteredTimeZones) {
-        const time = await fetchTime(timeZone);
+        const { date, time } = await fetchTime(timeZone);
         const timeZoneElement = document.createElement('div');
         timeZoneElement.className = 'time-zone';
-        timeZoneElement.innerHTML = `<h2>${country}</h2><p>${time}</p>`;
+        timeZoneElement.innerHTML = `<h2>${country}</h2><p>${date}</p><p>${time}</p>`;
         timeZonesElement.appendChild(timeZoneElement);
     }
 };
